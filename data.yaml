@@ -1,0 +1,6 @@
+path: C:/Users/santo/Documents/Verico X/varicose-vein-ai/dataset/DETECTION OF VARICOSE VEINS.v5-tiks.yolov8
+train: train/images
+val: valid/images
+test: test/images
+nc: 1
+names: ['infection']
