@@ -879,9 +879,12 @@ async function clearHistory() {
   if(!confirm("Are you sure you want to delete all scan records? This cannot be undone.")) return;
   try {
     const res = await fetch('/api/clear_history', { method: 'POST' });
-    if(res.ok) {
+    const data = await res.json();
+    if(res.ok && data.success) {
       alert("History cleared successfully.");
       openHistory(); 
+    } else {
+      alert("Failed to clear database: " + (data.error || "Unknown error"));
     }
   } catch(e) {
     alert("Failed to clear database: " + e.message);
@@ -896,7 +899,7 @@ async function openHistory() {
   modal.classList.add('active');
 
   try {
-    const res = await fetch('/api/history');
+    const res = await fetch('/api/history', { cache: 'no-store' });
     const data = await res.json();
     
     if(data.history && data.history.length > 0) {

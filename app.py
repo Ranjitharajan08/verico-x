@@ -6,12 +6,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel
 from ultralytics import YOLO
-import google.generativeai as genai
+from google import genai
 from PIL import Image, ImageOps
 import io
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Configure Gemini API
-genai.configure(api_key="AIzaSyBc20kqm8jtfBlyvLpr7dOYqEMXkpz7IeE")
+client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
 # ─────────────────────────────────────────────
 #  Setup & Database
@@ -247,9 +251,7 @@ def clear_history():
 @app.post("/api/chat")
 async def chat_endpoint(req: ChatRequest):
     try:
-        # gemini-flash-latest verified as working for this API key
-        model_name = "gemini-flash-latest"
-        model = genai.GenerativeModel(model_name)
+        model_name = "gemini-2.5-flash"
         
         system_prompt = (
             "You are VaricoseAI, a helpful, professional, and knowledgeable medical AI assistant "
@@ -259,14 +261,19 @@ async def chat_endpoint(req: ChatRequest):
             "Always be encouraging and professional. Keep responses concise."
         )
         
-        response = model.generate_content(f"{system_prompt}\n\nUser: {req.message}")
+        response = client.models.generate_content(
+            model=model_name,
+            contents=f"{system_prompt}\n\nUser: {req.message}"
+        )
         reply = response.text
     except Exception as e:
         print(f"[ERR] Gemini API Error: {e}")
         try:
-            # Fallback to gemini-pro-latest which is also listed as available
-            model = genai.GenerativeModel("gemini-pro-latest")
-            response = model.generate_content(f"You are a medical assistant for VaricoseAI. {req.message}")
+            # Fallback to gemini-2.5-pro
+            response = client.models.generate_content(
+                model="gemini-2.5-pro",
+                contents=f"You are a medical assistant for VaricoseAI. {req.message}"
+            )
             reply = response.text
         except Exception as e2:
             print(f"[ERR] Fallback failed: {e2}")

@@ -2,9 +2,8 @@ import os
 from ultralytics import YOLO
 
 def train_model():
-    # 1. Load a pretrained model (YOLOv8x is powerful for detection)
-    # We use 'yolov8x.pt' as the base to get the best accuracy.
-    model_type = "yolov8x.pt"
+    # 1. Load the existing model to fine-tune it
+    model_type = "best.pt"
     print(f"[INFO] Initializing training with {model_type}...")
     
     model = YOLO(model_type)
@@ -13,22 +12,21 @@ def train_model():
     # data: path to your data.yaml
     # epochs: 100 is usually good for fine-tuning
     # imgsz: 640 is standard
-    # batch: -1 auto-detects based on your GPU memory
+    # batch: 8 to ensure it runs accurately without memory issues
     # device: 0 for GPU, 'cpu' if no GPU
     results = model.train(
         data="data.yaml",
         epochs=100,
         imgsz=640,
-        batch=16,          # Adjust based on GPU memory (lower if out of memory)
+        batch=8,           # Lower batch size for stability
         patience=20,       # Early stopping if no improvement
         save=True,
-        device=0 if os.name == 'nt' else 'cpu', # Auto-detect GPU on Windows
         project="runs/train",
         name="varicose_model",
         exist_ok=True,
         pretrained=True,
         optimizer='AdamW', # Robust optimizer
-        lr0=0.01,          # Initial learning rate
+        lr0=0.001,         # Lower initial learning rate for accurate fine-tuning
     )
 
     print("[OK] Training complete.")

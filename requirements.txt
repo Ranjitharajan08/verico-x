@@ -5,6 +5,7 @@ opencv-python
 numpy
 python-multipart
 pydantic
-google-generativeai
+google-genai
+python-dotenv
 pyyaml
 Pillow
